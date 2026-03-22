@@ -1,7 +1,20 @@
 import { createClient } from "@libsql/client";
 
+function getDatabaseUrl(): string {
+  // Use configured Turso URL if available (remote or local)
+  if (process.env.TURSO_ARBITRAGE_DATABASE_URL) {
+    return process.env.TURSO_ARBITRAGE_DATABASE_URL;
+  }
+  // On Vercel (serverless), use /tmp which is writable
+  if (process.env.VERCEL) {
+    return "file:/tmp/arbitrage.db";
+  }
+  // Local development fallback
+  return "file:data/arbitrage.db";
+}
+
 const db = createClient({
-  url: process.env.TURSO_ARBITRAGE_DATABASE_URL || "file:data/arbitrage.db",
+  url: getDatabaseUrl(),
   authToken: process.env.TURSO_ARBITRAGE_AUTH_TOKEN || undefined,
 });
 
