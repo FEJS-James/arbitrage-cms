@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
     const result = await db.execute({ sql: query, args });
     return NextResponse.json(result.rows);
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error("Failed to fetch purchases:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 

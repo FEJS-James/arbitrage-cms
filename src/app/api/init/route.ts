@@ -7,8 +7,9 @@ export async function POST() {
     await initDb();
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("Failed to initialize database:", error);
     return NextResponse.json(
-      { error: String(error) },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -75,6 +75,7 @@ export async function GET() {
       recent_sales: recentSales.rows,
     });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error("Failed to fetch dashboard data:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

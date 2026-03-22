@@ -51,7 +51,8 @@ export async function GET(
       listings: listings.rows,
     });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error("Failed to fetch product details:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -91,6 +92,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error("Failed to update product:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
