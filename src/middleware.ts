@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { jwtVerify } from "jose";
 import { JWT_SECRET_ENCODED } from "./lib/constants";
 
@@ -21,10 +22,13 @@ export async function middleware(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
     const scannerApiKey = process.env.SCANNER_API_KEY;
 
+    const expected = Buffer.from(`Bearer ${scannerApiKey}`, "utf-8");
+    const received = Buffer.from(authHeader ?? "", "utf-8");
     if (
       scannerApiKey &&
       authHeader &&
-      authHeader === `Bearer ${scannerApiKey}`
+      expected.length === received.length &&
+      timingSafeEqual(expected, received)
     ) {
       return NextResponse.next();
     }
