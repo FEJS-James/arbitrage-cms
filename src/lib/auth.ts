@@ -1,21 +1,18 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-change-me"
-);
+import { JWT_SECRET_ENCODED } from "./constants";
 
 export async function createToken(): Promise<string> {
   return new SignJWT({ role: "admin" })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(secret);
+    .sign(JWT_SECRET_ENCODED);
 }
 
 export async function verifyToken(token: string): Promise<boolean> {
   try {
-    await jwtVerify(token, secret);
+    await jwtVerify(token, JWT_SECRET_ENCODED);
     return true;
   } catch {
     return false;
@@ -30,5 +27,7 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 export function checkPassword(password: string): boolean {
-  return password === (process.env.ADMIN_PASSWORD || "changeme");
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) throw new Error("ADMIN_PASSWORD environment variable is required");
+  return password === adminPassword;
 }

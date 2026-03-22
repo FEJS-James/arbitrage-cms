@@ -32,6 +32,18 @@ export async function POST(request: NextRequest) {
   try {
     await initDb();
     const body = await request.json();
+
+    // Input validation
+    if (!body.purchase_id || typeof body.purchase_id !== "string") {
+      return NextResponse.json({ error: "purchase_id is required and must be a string" }, { status: 400 });
+    }
+    if (!body.platform || typeof body.platform !== "string") {
+      return NextResponse.json({ error: "platform is required and must be a string" }, { status: 400 });
+    }
+    if (body.listing_price == null || typeof body.listing_price !== "number") {
+      return NextResponse.json({ error: "listing_price is required and must be a number" }, { status: 400 });
+    }
+
     const id = generateId();
     const now = new Date().toISOString();
 
@@ -64,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ id }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Failed to create listing" }, { status: 500 });
   }
 }

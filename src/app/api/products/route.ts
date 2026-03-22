@@ -45,6 +45,15 @@ export async function POST(request: NextRequest) {
   try {
     await initDb();
     const body = await request.json();
+
+    // Input validation
+    if (!body.name || typeof body.name !== "string") {
+      return NextResponse.json({ error: "name is required and must be a string" }, { status: 400 });
+    }
+    if (body.source_price == null || typeof body.source_price !== "number") {
+      return NextResponse.json({ error: "source_price is required and must be a number" }, { status: 400 });
+    }
+
     const id = generateId();
     const now = new Date().toISOString();
 
@@ -71,7 +80,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ id }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
   }
 }

@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
+import { JWT_SECRET_ENCODED } from "./lib/constants";
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-change-me"
-);
-
-const publicPaths = ["/login", "/api/auth", "/api/init"];
+const publicPaths = ["/login", "/api/auth"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,7 +26,7 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    await jwtVerify(token, secret);
+    await jwtVerify(token, JWT_SECRET_ENCODED);
     return NextResponse.next();
   } catch {
     if (pathname.startsWith("/api/")) {

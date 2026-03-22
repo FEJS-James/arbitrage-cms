@@ -31,6 +31,18 @@ export async function POST(request: NextRequest) {
   try {
     await initDb();
     const body = await request.json();
+
+    // Input validation
+    if (!body.product_id || typeof body.product_id !== "string") {
+      return NextResponse.json({ error: "product_id is required and must be a string" }, { status: 400 });
+    }
+    if (!body.platform || typeof body.platform !== "string") {
+      return NextResponse.json({ error: "platform is required and must be a string" }, { status: 400 });
+    }
+    if (body.estimated_sell_price == null || typeof body.estimated_sell_price !== "number") {
+      return NextResponse.json({ error: "estimated_sell_price is required and must be a number" }, { status: 400 });
+    }
+
     const id = generateId();
 
     // Get source price for profit calculation
@@ -77,7 +89,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ id, estimated_profit: estimatedProfit, estimated_roi: estimatedRoi }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Failed to create opportunity" }, { status: 500 });
   }
 }
