@@ -16,6 +16,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow API requests with a valid scanner API key
+  if (pathname.startsWith("/api/")) {
+    const authHeader = request.headers.get("authorization");
+    const scannerApiKey = process.env.SCANNER_API_KEY;
+
+    if (
+      scannerApiKey &&
+      authHeader &&
+      authHeader === `Bearer ${scannerApiKey}`
+    ) {
+      return NextResponse.next();
+    }
+  }
+
   const token = request.cookies.get("auth_token")?.value;
 
   if (!token) {
