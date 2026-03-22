@@ -1,7 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { timingSafeEqual } from "crypto";
 import { jwtVerify } from "jose";
 import { JWT_SECRET_ENCODED } from "./lib/constants";
+
+/** Constant-time string comparison using Web Crypto (Edge-compatible). */
+async function timingSafeCompare(a: string, b: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const aBuf = encoder.encode(a);
+  const bBuf = encoder.encode(b);
+  if (aBuf.length !== bBuf.length) return false;
+  const key = await crypto.subtle.importKey(
+    "raw",
+    aBuf,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, aBuf);
+  const sig2 = await crypto.subtle.sign("HMAC", key, bBuf);
+  const s1 = new Uint8Array(sig);
+  const s2 = new Uint8Array(sig2);
+  let diff = 0;
+  for (let i = 0; i < s1.length; i++) diff |= s1[i] ^ s2[i];
+  return diff === 0;
+}
 
 const publicPaths = ["/login", "/api/auth"];
 
@@ -22,13 +43,10 @@ export async function middleware(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
     const scannerApiKey = process.env.SCANNER_API_KEY;
 
-    const expected = Buffer.from(`Bearer ${scannerApiKey}`, "utf-8");
-    const received = Buffer.from(authHeader ?? "", "utf-8");
     if (
       scannerApiKey &&
       authHeader &&
-      expected.length === received.length &&
-      timingSafeEqual(expected, received)
+      (await timingSafeCompare(`Bearer ${scannerApiKey}`, authHeader))
     ) {
       return NextResponse.next();
     }
